@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
 
     // Verify shared password
-    if (password !== process.env.SHARED_PASSWORD) {
+    const passwordHash = process.env.SHARED_PASSWORD_HASH;
+    if (!passwordHash) {
+      console.error('SHARED_PASSWORD_HASH environment variable is not set');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+
+    const isValidPassword = await bcrypt.compare(password, passwordHash);
+    if (!isValidPassword) {
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
     }
 

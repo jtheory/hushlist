@@ -26,11 +26,17 @@ A family wishlist sharing app where everyone can add to each other's lists and s
    cp .env.local.example .env.local
    ```
 
-2. Fill in your values:
+2. Generate a password hash for your family's shared password:
+   ```bash
+   node scripts/generate-password-hash.js "your-family-password"
+   ```
+   Copy the output hash.
+
+3. Fill in your `.env.local` values:
    ```
    NEXT_PUBLIC_SUPABASE_URL=your-project-url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-   SHARED_PASSWORD=your-family-shared-password
+   SHARED_PASSWORD_HASH=your-generated-hash
    ```
 
 ### 3. Local Development
@@ -46,24 +52,32 @@ Open [http://localhost:3003](http://localhost:3003)
 
 #### Option A: Using Netlify Supabase Extension (Recommended)
 
-1. Push this code to a GitHub repository
-2. Go to [netlify.com](https://netlify.com) and click "Add new site" > "Import an existing project"
-3. Connect your GitHub repository
-4. After creating the site, go to "Integrations" and add the Supabase extension
-5. Connect it to your Supabase project - this automatically provides `SUPABASE_DATABASE_URL` and `SUPABASE_ANON_KEY`
-6. Manually add the `SHARED_PASSWORD` environment variable in Site settings > Environment variables
-7. Deploy!
+1. Generate your password hash locally:
+   ```bash
+   node scripts/generate-password-hash.js "your-family-password"
+   ```
+2. Push this code to a GitHub repository
+3. Go to [netlify.com](https://netlify.com) and click "Add new site" > "Import an existing project"
+4. Connect your GitHub repository
+5. After creating the site, go to "Integrations" and add the Supabase extension
+6. Connect it to your Supabase project - this automatically provides `SUPABASE_DATABASE_URL` and `SUPABASE_ANON_KEY`
+7. Manually add the `SHARED_PASSWORD_HASH` environment variable in Site settings > Environment variables (paste the hash from step 1)
+8. Deploy!
 
 #### Option B: Manual Environment Variables
 
-1. Push this code to a GitHub repository
-2. Go to [netlify.com](https://netlify.com) and click "Add new site" > "Import an existing project"
-3. Connect your GitHub repository
-4. Add environment variables in Site settings > Environment variables:
+1. Generate your password hash locally:
+   ```bash
+   node scripts/generate-password-hash.js "your-family-password"
+   ```
+2. Push this code to a GitHub repository
+3. Go to [netlify.com](https://netlify.com) and click "Add new site" > "Import an existing project"
+4. Connect your GitHub repository
+5. Add environment variables in Site settings > Environment variables:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SHARED_PASSWORD`
-5. Deploy!
+   - `SHARED_PASSWORD_HASH` (paste the hash from step 1)
+6. Deploy!
 
 ## Usage
 
