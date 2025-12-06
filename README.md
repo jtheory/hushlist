@@ -44,15 +44,26 @@ Open [http://localhost:3003](http://localhost:3003)
 
 ### 4. Deploy to Netlify
 
+#### Option A: Using Netlify Supabase Extension (Recommended)
+
 1. Push this code to a GitHub repository
 2. Go to [netlify.com](https://netlify.com) and click "Add new site" > "Import an existing project"
 3. Connect your GitHub repository
-4. Netlify will auto-detect Next.js settings
-5. Add your environment variables in Site settings > Environment variables:
+4. After creating the site, go to "Integrations" and add the Supabase extension
+5. Connect it to your Supabase project - this automatically provides `SUPABASE_DATABASE_URL` and `SUPABASE_ANON_KEY`
+6. Manually add the `SHARED_PASSWORD` environment variable in Site settings > Environment variables
+7. Deploy!
+
+#### Option B: Manual Environment Variables
+
+1. Push this code to a GitHub repository
+2. Go to [netlify.com](https://netlify.com) and click "Add new site" > "Import an existing project"
+3. Connect your GitHub repository
+4. Add environment variables in Site settings > Environment variables:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SHARED_PASSWORD`
-6. Deploy!
+5. Deploy!
 
 ## Usage
 

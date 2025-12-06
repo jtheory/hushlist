@@ -17,6 +17,8 @@ export default function WishlistPage() {
   const [newItemText, setNewItemText] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
+  const [editingName, setEditingName] = useState(false);
+  const [editNameText, setEditNameText] = useState('');
 
   const isOwnList = currentUser?.id === userId;
 
@@ -143,6 +145,35 @@ export default function WishlistPage() {
     setEditText('');
   };
 
+  const handleEditName = async () => {
+    if (!editNameText.trim() || !wishlistOwner) return;
+
+    const { data, error } = await supabase
+      .from('users')
+      .update({ name: editNameText.trim() })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating name:', error);
+    } else {
+      setWishlistOwner(data);
+      setEditingName(false);
+      setEditNameText('');
+    }
+  };
+
+  const startEditName = () => {
+    setEditingName(true);
+    setEditNameText(wishlistOwner?.name || '');
+  };
+
+  const cancelEditName = () => {
+    setEditingName(false);
+    setEditNameText('');
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -172,10 +203,45 @@ export default function WishlistPage() {
 
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="p-6 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-gray-900">
-              {wishlistOwner.name}&apos;s Wishlist
-              {isOwnList && <span className="text-lg font-normal text-gray-600 ml-2">(Your List)</span>}
-            </h1>
+            {editingName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={editNameText}
+                  onChange={(e) => setEditNameText(e.target.value)}
+                  className="text-2xl font-bold px-3 py-1 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  autoFocus
+                />
+                <button
+                  onClick={handleEditName}
+                  className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={cancelEditName}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {wishlistOwner.name}&apos;s Wishlist
+                  {isOwnList && <span className="text-lg font-normal text-gray-600 ml-2">(Your List)</span>}
+                </h1>
+                <button
+                  onClick={startEditName}
+                  className="text-gray-600 hover:text-indigo-600"
+                  title="Edit name"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="p-6">
@@ -186,7 +252,7 @@ export default function WishlistPage() {
                   value={newItemText}
                   onChange={(e) => setNewItemText(e.target.value)}
                   placeholder="Add a new item..."
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
                 <button
                   type="submit"
@@ -225,7 +291,7 @@ export default function WishlistPage() {
                             type="text"
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            className="flex-1 px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="flex-1 px-3 py-1 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             autoFocus
                           />
                           <button
