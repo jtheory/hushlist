@@ -8,12 +8,17 @@ export async function POST(request: NextRequest) {
 
     // Verify shared password
     const passwordHash = process.env.SHARED_PASSWORD_HASH;
+    console.log('Password hash from env:', passwordHash ? `${passwordHash.substring(0, 20)}...` : 'NOT SET');
+    console.log('Received password length:', password?.length);
+
     if (!passwordHash) {
       console.error('SHARED_PASSWORD_HASH environment variable is not set');
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
 
     const isValidPassword = await bcrypt.compare(password, passwordHash);
+    console.log('Password validation result:', isValidPassword);
+
     if (!isValidPassword) {
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
     }

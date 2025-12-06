@@ -36,8 +36,9 @@ A family wishlist sharing app where everyone can add to each other's lists and s
    ```
    NEXT_PUBLIC_SUPABASE_URL=your-project-url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-   SHARED_PASSWORD_HASH=your-generated-hash
+   SHARED_PASSWORD_HASH="your-generated-hash"
    ```
+   **Important:** The hash must be quoted because it contains `$` characters.
 
 ### 3. Local Development
 
