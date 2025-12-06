@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { supabase, User } from '@/lib/supabase';
+import { User } from '@/lib/supabase';
 
 export default function DashboardPage() {
   const { user, logout, loading: authLoading } = useAuth();
@@ -19,17 +19,18 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .order('name');
-
-      if (error) {
+      try {
+        const response = await fetch('/api/users');
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+        const data = await response.json();
+        setUsers(data);
+      } catch (error) {
         console.error('Error fetching users:', error);
-      } else {
-        setUsers(data || []);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     if (user) {

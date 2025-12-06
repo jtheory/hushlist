@@ -1,14 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Use Netlify-provided env vars first, then fall back to NEXT_PUBLIC_ vars for local dev
+// Server-side only: Use Netlify integration vars or local dev vars
+// Note: This module should only be imported by server-side code (API routes)
 const supabaseUrl = process.env.SUPABASE_DATABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
-    'Missing Supabase credentials. Please set SUPABASE_DATABASE_URL and SUPABASE_ANON_KEY ' +
-    '(via Netlify integration) or NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY ' +
-    '(in .env.local for local development)'
+    'Missing Supabase credentials. Please set:\n' +
+    '- SUPABASE_DATABASE_URL and SUPABASE_ANON_KEY (Netlify integration)\n' +
+    '- OR NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (local .env.local)'
   );
 }
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { supabase, User, WishlistItem } from '@/lib/supabase';
+import { User, WishlistItem } from '@/lib/supabase';
 
 export default function WishlistPage() {
   const { user: currentUser, loading: authLoading } = useAuth();
@@ -30,35 +30,19 @@ export default function WishlistPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      // Fetch wishlist owner
-      const { data: owner, error: ownerError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (ownerError) {
-        console.error('Error fetching user:', ownerError);
+      try {
+        const response = await fetch(`/api/wishlist/${userId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch wishlist');
+        }
+        const { owner, items } = await response.json();
+        setWishlistOwner(owner);
+        setItems(items);
+      } catch (error) {
+        console.error('Error fetching wishlist:', error);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      setWishlistOwner(owner);
-
-      // Fetch wishlist items
-      const { data: itemsData, error: itemsError } = await supabase
-        .from('wishlist_items')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (itemsError) {
-        console.error('Error fetching items:', itemsError);
-      } else {
-        setItems(itemsData || []);
-      }
-
-      setLoading(false);
     };
 
     if (currentUser && userId) {
@@ -70,49 +54,61 @@ export default function WishlistPage() {
     e.preventDefault();
     if (!newItemText.trim() || !currentUser) return;
 
-    const { data, error } = await supabase
-      .from('wishlist_items')
-      .insert([{ user_id: userId, item_text: newItemText.trim() }])
-      .select()
-      .single();
+    try {
+      const response = await fetch(`/api/wishlist/${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item_text: newItemText.trim() }),
+      });
 
-    if (error) {
-      console.error('Error adding item:', error);
-    } else {
+      if (!response.ok) {
+        throw new Error('Failed to add item');
+      }
+
+      const data = await response.json();
       setItems([data, ...items]);
       setNewItemText('');
+    } catch (error) {
+      console.error('Error adding item:', error);
     }
   };
 
   const handleDeleteItem = async (itemId: string) => {
-    const { error } = await supabase
-      .from('wishlist_items')
-      .delete()
-      .eq('id', itemId);
+    try {
+      const response = await fetch(`/api/wishlist/${userId}/items/${itemId}`, {
+        method: 'DELETE',
+      });
 
-    if (error) {
-      console.error('Error deleting item:', error);
-    } else {
+      if (!response.ok) {
+        throw new Error('Failed to delete item');
+      }
+
       setItems(items.filter(item => item.id !== itemId));
+    } catch (error) {
+      console.error('Error deleting item:', error);
     }
   };
 
   const handleEditItem = async (itemId: string) => {
     if (!editText.trim()) return;
 
-    const { data, error } = await supabase
-      .from('wishlist_items')
-      .update({ item_text: editText.trim(), updated_at: new Date().toISOString() })
-      .eq('id', itemId)
-      .select()
-      .single();
+    try {
+      const response = await fetch(`/api/wishlist/${userId}/items/${itemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item_text: editText.trim() }),
+      });
 
-    if (error) {
-      console.error('Error updating item:', error);
-    } else {
+      if (!response.ok) {
+        throw new Error('Failed to update item');
+      }
+
+      const data = await response.json();
       setItems(items.map(item => item.id === itemId ? data : item));
       setEditingId(null);
       setEditText('');
+    } catch (error) {
+      console.error('Error updating item:', error);
     }
   };
 
@@ -121,17 +117,21 @@ export default function WishlistPage() {
 
     const newClaimedBy = item.claimed_by ? null : currentUser.id;
 
-    const { data, error } = await supabase
-      .from('wishlist_items')
-      .update({ claimed_by: newClaimedBy, updated_at: new Date().toISOString() })
-      .eq('id', item.id)
-      .select()
-      .single();
+    try {
+      const response = await fetch(`/api/wishlist/${userId}/items/${item.id}/claim`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ claimed_by: newClaimedBy }),
+      });
 
-    if (error) {
-      console.error('Error toggling claim:', error);
-    } else {
+      if (!response.ok) {
+        throw new Error('Failed to toggle claim');
+      }
+
+      const data = await response.json();
       setItems(items.map(i => i.id === item.id ? data : i));
+    } catch (error) {
+      console.error('Error toggling claim:', error);
     }
   };
 
@@ -148,19 +148,23 @@ export default function WishlistPage() {
   const handleEditName = async () => {
     if (!editNameText.trim() || !wishlistOwner) return;
 
-    const { data, error } = await supabase
-      .from('users')
-      .update({ name: editNameText.trim() })
-      .eq('id', userId)
-      .select()
-      .single();
+    try {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editNameText.trim() }),
+      });
 
-    if (error) {
-      console.error('Error updating name:', error);
-    } else {
+      if (!response.ok) {
+        throw new Error('Failed to update name');
+      }
+
+      const data = await response.json();
       setWishlistOwner(data);
       setEditingName(false);
       setEditNameText('');
+    } catch (error) {
+      console.error('Error updating name:', error);
     }
   };
 

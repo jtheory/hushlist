@@ -36,9 +36,9 @@ A family wishlist sharing app where everyone can add to each other's lists and s
    ```
    NEXT_PUBLIC_SUPABASE_URL=your-project-url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-   SHARED_PASSWORD_HASH="your-generated-hash"
+   SHARED_PASSWORD_HASH=\$2b\$10\$your-generated-hash
    ```
-   **Important:** The hash must be quoted because it contains `$` characters.
+   **Important:** Escape each `$` character with a backslash (`\`).
 
 ### 3. Local Development
 
@@ -51,7 +51,7 @@ Open [http://localhost:3003](http://localhost:3003)
 
 ### 4. Deploy to Netlify
 
-#### Option A: Using Netlify Supabase Extension (Recommended)
+#### Using Netlify with Supabase Extension
 
 1. Generate your password hash locally:
    ```bash
@@ -61,24 +61,12 @@ Open [http://localhost:3003](http://localhost:3003)
 3. Go to [netlify.com](https://netlify.com) and click "Add new site" > "Import an existing project"
 4. Connect your GitHub repository
 5. After creating the site, go to "Integrations" and add the Supabase extension
-6. Connect it to your Supabase project - this automatically provides `SUPABASE_DATABASE_URL` and `SUPABASE_ANON_KEY`
-7. Manually add the `SHARED_PASSWORD_HASH` environment variable in Site settings > Environment variables (paste the hash from step 1)
+6. Connect it to your Supabase project - this automatically provides `SUPABASE_DATABASE_URL` and `SUPABASE_ANON_KEY` to your server-side code
+7. Manually add the `SHARED_PASSWORD_HASH` environment variable in Site settings > Environment variables:
+   - Use backslash escapes: `\$2b\$10\$...` (escape each `$` with `\`)
 8. Deploy!
 
-#### Option B: Manual Environment Variables
-
-1. Generate your password hash locally:
-   ```bash
-   node scripts/generate-password-hash.js "your-family-password"
-   ```
-2. Push this code to a GitHub repository
-3. Go to [netlify.com](https://netlify.com) and click "Add new site" > "Import an existing project"
-4. Connect your GitHub repository
-5. Add environment variables in Site settings > Environment variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SHARED_PASSWORD_HASH` (paste the hash from step 1)
-6. Deploy!
+**Note:** All data access happens through API routes, so Supabase credentials stay server-side only.
 
 ## Usage
 
