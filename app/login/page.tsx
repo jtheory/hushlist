@@ -56,7 +56,7 @@ export default function LoginPage() {
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Family Password
+                Family password
               </label>
               <input
                 id="password"

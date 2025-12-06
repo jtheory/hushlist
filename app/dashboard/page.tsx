@@ -73,7 +73,7 @@ export default function DashboardPage() {
 
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Family Members</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Family members</h2>
             <p className="text-sm text-gray-600 mt-1">Click on a name to view their wishlist</p>
           </div>
           <div className="divide-y divide-gray-200">
@@ -88,7 +88,7 @@ export default function DashboardPage() {
                     <h3 className="text-lg font-medium text-gray-900">
                       {familyMember.name}
                       {familyMember.id === user.id && (
-                        <span className="ml-2 text-sm text-gray-500">(You)</span>
+                        <span className="ml-2 text-sm text-gray-500">(you)</span>
                       )}
                     </h3>
                     <p className="text-sm text-gray-600">{familyMember.email}</p>

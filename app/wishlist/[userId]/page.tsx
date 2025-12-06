@@ -201,7 +201,7 @@ export default function WishlistPage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Back to Dashboard
+            Back to dashboard
           </button>
         </div>
 
@@ -232,8 +232,8 @@ export default function WishlistPage() {
             ) : (
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {wishlistOwner.name}&apos;s Wishlist
-                  {isOwnList && <span className="text-lg font-normal text-gray-600 ml-2">(Your List)</span>}
+                  {wishlistOwner.name}&apos;s wishlist
+                  {isOwnList && <span className="text-lg font-normal text-gray-600 ml-2">(your list)</span>}
                 </h1>
                 <button
                   onClick={startEditName}
