@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { User } from '@/lib/supabase';
+import { User, Settings } from '@/lib/supabase';
 
 export default function DashboardPage() {
   const { user, logout, loading: authLoading } = useAuth();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
+  const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,29 +19,61 @@ export default function DashboardPage() {
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/users');
-        if (!response.ok) {
+        const [usersResponse, settingsResponse] = await Promise.all([
+          fetch('/api/users'),
+          fetch('/api/settings')
+        ]);
+
+        if (!usersResponse.ok) {
           throw new Error('Failed to fetch users');
         }
-        const data = await response.json();
-        setUsers(data);
+        if (!settingsResponse.ok) {
+          throw new Error('Failed to fetch settings');
+        }
+
+        const usersData = await usersResponse.json();
+        const settingsData = await settingsResponse.json();
+
+        setUsers(usersData);
+        setSettings(settingsData);
       } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
 
     if (user) {
-      fetchUsers();
+      fetchData();
     }
   }, [user]);
 
   const handleLogout = () => {
     logout();
     router.push('/login');
+  };
+
+  const handleToggleNewUsers = async () => {
+    if (!settings) return;
+
+    try {
+      const response = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ allow_new_users: !settings.allow_new_users }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update settings');
+      }
+
+      const updatedSettings = await response.json();
+      setSettings(updatedSettings);
+    } catch (error) {
+      console.error('Error updating settings:', error);
+    }
   };
 
   if (authLoading || loading) {
@@ -71,7 +104,7 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900">Family members</h2>
             <p className="text-sm text-gray-600 mt-1">Click on a name to view their wishlist</p>
@@ -109,6 +142,34 @@ export default function DashboardPage() {
                 </div>
               </button>
             ))}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900">Settings</h2>
+          </div>
+          <div className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-medium text-gray-900">Allow more to join?</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  When disabled, new accounts cannot be created at login
+                </p>
+              </div>
+              <button
+                onClick={handleToggleNewUsers}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  settings?.allow_new_users ? 'bg-indigo-600' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    settings?.allow_new_users ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
           </div>
         </div>
       </div>

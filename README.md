@@ -19,26 +19,34 @@ A family wishlist sharing app where everyone can add to each other's lists and s
 3. Run the SQL from `supabase-schema.sql` to create the database tables
 4. Get your project URL and anon key from Settings > API
 
-### 2. Environment Variables
+### 2. Environment Variables (Local Development)
 
 1. Copy `.env.local.example` to `.env.local`:
    ```bash
    cp .env.local.example .env.local
    ```
 
-2. Generate a password hash for your family's shared password:
+2. Fill in your Supabase credentials from step 1:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...your-key-here
+   ```
+
+3. Generate and add your password hash:
    ```bash
    node scripts/generate-password-hash.js "your-family-password"
    ```
-   Copy the output hash.
+   Copy the hash from the output and add it to `.env.local`, **escaping each `$` with `\`**:
+   ```
+   SHARED_PASSWORD_HASH=\$2b\$10\$xV9wiYRu36Q1m74Iolx/WOXDTFfWwU3QFL3YqfVzMqm5X3t4Ti1EO
+   ```
 
-3. Fill in your `.env.local` values:
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=your-project-url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-   SHARED_PASSWORD_HASH=\$2b\$10\$your-generated-hash
-   ```
-   **Important:** Escape each `$` character with a backslash (`\`).
+**Complete `.env.local` example:**
+```
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...your-anon-key
+SHARED_PASSWORD_HASH=\$2b\$10\$xV9wiY...your-hash-here
+```
 
 ### 3. Local Development
 

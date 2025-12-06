@@ -30,3 +30,9 @@ export type WishlistItem = {
   created_at: string;
   updated_at: string;
 };
+
+export type Settings = {
+  id: number;
+  allow_new_users: boolean;
+  updated_at: string;
+};

@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { User, WishlistItem } from '@/lib/supabase';
 
 export default function WishlistPage() {
-  const { user: currentUser, loading: authLoading } = useAuth();
+  const { user: currentUser, loading: authLoading, updateUser } = useAuth();
   const router = useRouter();
   const params = useParams();
   const userId = params.userId as string;
@@ -19,6 +19,8 @@ export default function WishlistPage() {
   const [editText, setEditText] = useState('');
   const [editingName, setEditingName] = useState(false);
   const [editNameText, setEditNameText] = useState('');
+  const [bulkAddMode, setBulkAddMode] = useState(false);
+  const [bulkText, setBulkText] = useState('');
 
   const isOwnList = currentUser?.id === userId;
 
@@ -161,6 +163,12 @@ export default function WishlistPage() {
 
       const data = await response.json();
       setWishlistOwner(data);
+
+      // Update auth context if editing your own name
+      if (isOwnList) {
+        updateUser(data);
+      }
+
       setEditingName(false);
       setEditNameText('');
     } catch (error) {
@@ -176,6 +184,45 @@ export default function WishlistPage() {
   const cancelEditName = () => {
     setEditingName(false);
     setEditNameText('');
+  };
+
+  const handleBulkAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bulkText.trim() || !currentUser) return;
+
+    const lines = bulkText
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+
+    if (lines.length === 0) return;
+
+    try {
+      // Add all items in parallel
+      const promises = lines.map(line =>
+        fetch(`/api/wishlist/${userId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ item_text: line }),
+        })
+      );
+
+      const responses = await Promise.all(promises);
+      const newItems = await Promise.all(
+        responses.map(response => {
+          if (!response.ok) {
+            throw new Error('Failed to add item');
+          }
+          return response.json();
+        })
+      );
+
+      setItems([...newItems, ...items]);
+      setBulkText('');
+      setBulkAddMode(false);
+    } catch (error) {
+      console.error('Error adding items:', error);
+    }
   };
 
   if (authLoading || loading) {
@@ -249,23 +296,66 @@ export default function WishlistPage() {
           </div>
 
           <div className="p-6">
-            <form onSubmit={handleAddItem} className="mb-6">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newItemText}
-                  onChange={(e) => setNewItemText(e.target.value)}
-                  placeholder="Add a new item..."
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            <div className="mb-4 flex justify-end">
+              <button
+                onClick={() => {
+                  setBulkAddMode(!bulkAddMode);
+                  setBulkText('');
+                  setNewItemText('');
+                }}
+                className="text-sm text-indigo-600 hover:text-indigo-800"
+              >
+                {bulkAddMode ? 'Switch to single item' : 'Add multiple items'}
+              </button>
+            </div>
+
+            {bulkAddMode ? (
+              <form onSubmit={handleBulkAdd} className="mb-6">
+                <textarea
+                  value={bulkText}
+                  onChange={(e) => setBulkText(e.target.value)}
+                  placeholder="Paste your list here (one item per line)..."
+                  rows={8}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-2"
                 />
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  Add
-                </button>
-              </div>
-            </form>
+                <div className="flex gap-2 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBulkAddMode(false);
+                      setBulkText('');
+                    }}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    Add All
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleAddItem} className="mb-6">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newItemText}
+                    onChange={(e) => setNewItemText(e.target.value)}
+                    placeholder="Add a new item..."
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <button
+                    type="submit"
+                    className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    Add
+                  </button>
+                </div>
+              </form>
+            )}
 
             {items.length === 0 ? (
               <p className="text-center text-gray-500 py-8">
