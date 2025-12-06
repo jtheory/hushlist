@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# hushlist
 
-## Getting Started
+A family wishlist sharing app where everyone can add to each other's lists and secretly claim items.
 
-First, run the development server:
+## Features
+
+- Simple email + shared password authentication
+- Each family member has their own wishlist
+- Add, edit, and delete wishlist items
+- When viewing someone else's list, you can claim items (they won't see who claimed them)
+- When viewing your own list, claim status is hidden (no spoilers!)
+
+## Setup
+
+### 1. Supabase Setup
+
+1. Create a new project at [supabase.com](https://supabase.com)
+2. Go to the SQL Editor in your Supabase dashboard
+3. Run the SQL from `supabase-schema.sql` to create the database tables
+4. Get your project URL and anon key from Settings > API
+
+### 2. Environment Variables
+
+1. Copy `.env.local.example` to `.env.local`:
+   ```bash
+   cp .env.local.example .env.local
+   ```
+
+2. Fill in your values:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=your-project-url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   SHARED_PASSWORD=your-family-shared-password
+   ```
+
+### 3. Local Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Deploy to Netlify
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Push this code to a GitHub repository
+2. Go to [netlify.com](https://netlify.com) and click "Add new site" > "Import an existing project"
+3. Connect your GitHub repository
+4. Netlify will auto-detect Next.js settings
+5. Add your environment variables in Site settings > Environment variables:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SHARED_PASSWORD`
+6. Deploy!
 
-## Learn More
+## Usage
 
-To learn more about Next.js, take a look at the following resources:
+1. Each family member logs in with their email and the shared password
+2. First-time users are automatically created with their email
+3. From the dashboard, click on any family member to view/edit their wishlist
+4. When viewing others' wishlists, check the box to claim an item
+5. The wishlist owner won't see the claim status to keep it a surprise!
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js 15 with App Router
+- TypeScript
+- Tailwind CSS
+- Supabase (PostgreSQL database)
+- Netlify (hosting)
