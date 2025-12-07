@@ -27,6 +27,31 @@ export default function WishlistPage() {
 
   const isOwnList = currentUser?.id === userId;
 
+  // Helper function to linkify URLs in text
+  const linkifyText = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+
+    return parts.map((part, index) => {
+      if (part.match(urlRegex)) {
+        const displayText = part.length > 30 ? part.substring(0, 30) + '...' : part;
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-indigo-600 hover:text-indigo-800 underline"
+            title={part}
+          >
+            {displayText}
+          </a>
+        );
+      }
+      return part;
+    });
+  };
+
   useEffect(() => {
     if (!authLoading && !currentUser) {
       router.push('/login');
@@ -309,7 +334,7 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8">
       <div className="max-w-3xl mx-auto px-4">
         <div className="mb-6">
           <button
@@ -437,14 +462,14 @@ export default function WishlistPage() {
                 {items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg"
+                    className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg"
                   >
                     {!isOwnList && (
                       <input
                         type="checkbox"
                         checked={!!item.claimed_by}
                         onChange={() => handleToggleClaim(item)}
-                        className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+                        className="w-5 h-5 mt-0.5 text-indigo-600 rounded focus:ring-indigo-500"
                         title={item.claimed_by ? "Already claimed" : "Click to claim"}
                       />
                     )}
@@ -474,7 +499,7 @@ export default function WishlistPage() {
                         </div>
                       ) : (
                         <>
-                          <p className="text-gray-900">{item.item_text}</p>
+                          <p className="text-gray-900">{linkifyText(item.item_text)}</p>
 
                           {!isOwnList && itemNotes[item.id] && itemNotes[item.id].length > 0 && (
                             <div className="mt-2 space-y-1">
