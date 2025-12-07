@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { navigate } from '@/lib/view-transitions';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -20,7 +21,7 @@ export default function LoginPage() {
     const success = await login(email, password);
 
     if (success) {
-      router.push('/dashboard');
+      navigate(router, '/dashboard');
     } else {
       setError('Invalid email or password');
       setLoading(false);
@@ -29,7 +30,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+      <div
+        className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md"
+        style={{ viewTransitionName: 'content-box' } as React.CSSProperties}
+      >
         <div>
           <h2 className="text-center text-3xl font-bold text-gray-900">
             hushlist

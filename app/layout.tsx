@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import "./components/fun.css";
 import Snowflakes from "./components/Snowflakes";
+import BackgroundParallax from "./components/BackgroundParallax";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,7 +31,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="background-bg"></div>
+        <BackgroundParallax />
         <Snowflakes />
         <AuthProvider>{children}</AuthProvider>
       </body>

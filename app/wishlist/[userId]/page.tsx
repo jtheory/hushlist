@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { User, WishlistItem, ItemNote } from '@/lib/supabase';
+import { navigate } from '@/lib/view-transitions';
 
 export default function WishlistPage() {
   const { user: currentUser, loading: authLoading, updateUser } = useAuth();
@@ -338,7 +339,7 @@ export default function WishlistPage() {
       <div className="max-w-3xl mx-auto px-4">
         <div className="mb-6">
           <button
-            onClick={() => router.push('/dashboard')}
+            onClick={() => navigate(router, '/dashboard')}
             className="text-indigo-600 hover:text-indigo-800 flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -348,7 +349,10 @@ export default function WishlistPage() {
           </button>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div
+          className="bg-white rounded-lg shadow-md overflow-hidden"
+          style={{ viewTransitionName: 'content-box' } as React.CSSProperties}
+        >
           <div className="p-6 border-b border-gray-200">
             {editingName ? (
               <div className="flex items-center gap-2">

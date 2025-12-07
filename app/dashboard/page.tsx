@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { User, Settings } from '@/lib/supabase';
+import { navigate } from '@/lib/view-transitions';
 
 export default function DashboardPage() {
   const { user, logout, loading: authLoading } = useAuth();
@@ -104,7 +105,10 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div
+          className="bg-white rounded-lg shadow-md overflow-hidden mb-6"
+          style={{ viewTransitionName: 'content-box' } as React.CSSProperties}
+        >
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900">Family members</h2>
             <p className="text-sm text-gray-600 mt-1">Click on a name to view their wishlist</p>
@@ -113,7 +117,7 @@ export default function DashboardPage() {
             {users.map((familyMember) => (
               <button
                 key={familyMember.id}
-                onClick={() => router.push(`/wishlist/${familyMember.id}`)}
+                onClick={() => navigate(router, `/wishlist/${familyMember.id}`)}
                 className="w-full px-6 py-4 text-left hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center justify-between">
