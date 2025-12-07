@@ -54,11 +54,54 @@ const snowflakeShapes = [
 
 const Snowflakes = () => {
   const [snowflakes, setSnowflakes] = useState<JSX.Element[]>([]);
+  const [offset, setOffset] = useState({ x: 0 });
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Detect if mobile/touch device
+    const checkMobile = () => {
+      setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    };
+    checkMobile();
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) {
+      // On mobile, use scroll position
+      const handleScroll = () => {
+        const scrollY = window.scrollY;
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+
+        // Convert scroll to -1 to 1 range
+        const scrollPercent = maxScroll > 0 ? (scrollY / maxScroll) * 2 - 1 : 0;
+
+        setOffset({ x: scrollPercent * 0.5 }); // Horizontal shift based on scroll
+      };
+
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      return () => window.removeEventListener('scroll', handleScroll);
+    } else {
+      // On desktop, use mouse position (horizontal only)
+      const handleMouseMove = (e: MouseEvent) => {
+        // Get mouse position relative to viewport center
+        const centerX = window.innerWidth / 2;
+
+        // Calculate offset from center as percentage
+        const offsetX = (e.clientX - centerX) / centerX;
+
+        setOffset({ x: offsetX });
+      };
+
+      window.addEventListener('mousemove', handleMouseMove, { passive: true });
+      return () => window.removeEventListener('mousemove', handleMouseMove);
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     const createSnowflake = () => {
       const size = Math.random() * 15 + 8;
-      const left = Math.random() * 100;
+      // Spawn from -10vw to 110vw to account for parallax shift (±70px)
+      const left = Math.random() * 120 - 10;
       const animationDuration = Math.random() * 5 + 5;
       const shapeIndex = Math.floor(Math.random() * snowflakeShapes.length);
       const rotationDuration = Math.random() * 6 + 4; // 4-10 seconds for rotation
@@ -90,7 +133,20 @@ const Snowflakes = () => {
     return () => clearInterval(interval);
   }, []);
 
-  return <div className="snowflakes">{snowflakes}</div>;
+  // Snowflakes move in same direction as mouse, more dramatically (70px horizontal movement)
+  const translateX = offset.x * 70;
+
+  return (
+    <div
+      className="snowflakes"
+      style={{
+        transform: `translateX(${translateX}px)`,
+        transition: 'transform 0.3s ease-out',
+      }}
+    >
+      {snowflakes}
+    </div>
+  );
 };
 
 export default Snowflakes;

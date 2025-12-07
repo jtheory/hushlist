@@ -5,6 +5,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import "./components/fun.css";
 import Snowflakes from "./components/Snowflakes";
 import BackgroundParallax from "./components/BackgroundParallax";
+import { ViewTransitions } from 'next-view-transitions';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,14 +28,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <BackgroundParallax />
-        <Snowflakes />
-        <AuthProvider>{children}</AuthProvider>
-      </body>
-    </html>
+    <ViewTransitions>
+      <html lang="en">
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+          <BackgroundParallax />
+          <Snowflakes />
+          <AuthProvider>{children}</AuthProvider>
+        </body>
+      </html>
+    </ViewTransitions>
   );
 }

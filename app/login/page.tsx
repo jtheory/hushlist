@@ -1,16 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { navigate } from '@/lib/view-transitions';
+import { useTransitionRouter } from 'next-view-transitions';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const router = useTransitionRouter();
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,7 +20,7 @@ export default function LoginPage() {
     const success = await login(email, password);
 
     if (success) {
-      navigate(router, '/dashboard');
+      router.push('/dashboard');
     } else {
       setError('Invalid email or password');
       setLoading(false);
@@ -31,7 +30,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div
-        className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md"
+        className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md content-box-transition"
         style={{ viewTransitionName: 'content-box' } as React.CSSProperties}
       >
         <div>

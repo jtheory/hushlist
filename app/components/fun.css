@@ -1,8 +1,4 @@
 
-@view-transition {
-    navigation: auto;
-}
-
 body {
     background-color: #f8fafc;
 }
@@ -10,48 +6,20 @@ body {
 /* View Transition animations */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-    animation-duration: 0.3s;
+    animation-duration: 0.4s;
     animation-timing-function: ease-in-out;
 }
 
 /* Content box morphing animation */
 ::view-transition-old(content-box),
 ::view-transition-new(content-box) {
-    animation-duration: 0.5s;
+    animation-duration: 0.6s;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    mix-blend-mode: normal;
 }
 
-::view-transition-old(content-box) {
-    animation-name: fade-out, scale-down;
-}
-
-::view-transition-new(content-box) {
-    animation-name: fade-in, scale-up;
-}
-
-@keyframes fade-out {
-    to {
-        opacity: 0;
-    }
-}
-
-@keyframes fade-in {
-    from {
-        opacity: 0;
-    }
-}
-
-@keyframes scale-down {
-    to {
-        transform: scale(0.95);
-    }
-}
-
-@keyframes scale-up {
-    from {
-        transform: scale(0.95);
-    }
+/* Smooth height transitions for content boxes */
+.content-box-transition {
+    transition: all 0.3s ease-in-out;
 }
 
 .background-bg {
@@ -83,6 +51,7 @@ body {
     opacity: 0.8;
     animation: fall linear infinite, rotate linear infinite;
     animation-duration: inherit, var(--rotation-duration);
+    filter: blur(1px);
 }
 
 .snowflake svg {

@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { User, Settings } from '@/lib/supabase';
-import { navigate } from '@/lib/view-transitions';
+import { Link, useTransitionRouter } from 'next-view-transitions';
 
 export default function DashboardPage() {
   const { user, logout, loading: authLoading } = useAuth();
-  const router = useRouter();
+  const router = useTransitionRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,18 +51,22 @@ export default function DashboardPage() {
   }, [user]);
 
   const handleLogout = () => {
-    logout();
+    // Navigate with transition first, then logout
     router.push('/login');
+    // Delay logout slightly to allow transition to capture the current state
+    setTimeout(() => {
+      logout();
+    }, 50);
   };
 
   const handleToggleNewUsers = async () => {
-    if (!settings) return;
+    if (!displaySettings) return;
 
     try {
       const response = await fetch('/api/settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ allow_new_users: !settings.allow_new_users }),
+        body: JSON.stringify({ allow_new_users: !displaySettings.allow_new_users }),
       });
 
       if (!response.ok) {
@@ -77,17 +80,17 @@ export default function DashboardPage() {
     }
   };
 
-  if (authLoading || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
-      </div>
-    );
+  if (authLoading) {
+    return null;
   }
 
   if (!user) {
     return null;
   }
+
+  // Show content even while loading data - better for view transitions
+  const displayUsers = loading ? [] : users;
+  const displaySettings = loading ? null : settings;
 
   return (
     <div className="min-h-screen py-8">
@@ -106,19 +109,19 @@ export default function DashboardPage() {
         </div>
 
         <div
-          className="bg-white rounded-lg shadow-md overflow-hidden mb-6"
-          style={{ viewTransitionName: 'content-box' } as React.CSSProperties}
+          className="bg-white rounded-lg shadow-md overflow-hidden mb-6 content-box-transition"
+          style={{ viewTransitionName: 'content-box', minHeight: '200px' } as React.CSSProperties}
         >
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900">Family members</h2>
             <p className="text-sm text-gray-600 mt-1">Click on a name to view their wishlist</p>
           </div>
           <div className="divide-y divide-gray-200">
-            {users.map((familyMember) => (
-              <button
+            {displayUsers.map((familyMember) => (
+              <Link
                 key={familyMember.id}
-                onClick={() => navigate(router, `/wishlist/${familyMember.id}`)}
-                className="w-full px-6 py-4 text-left hover:bg-gray-50 transition-colors"
+                href={`/wishlist/${familyMember.id}`}
+                className="block w-full px-6 py-4 text-left hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -144,7 +147,7 @@ export default function DashboardPage() {
                     />
                   </svg>
                 </div>
-              </button>
+              </Link>
             ))}
           </div>
         </div>
@@ -164,12 +167,12 @@ export default function DashboardPage() {
               <button
                 onClick={handleToggleNewUsers}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  settings?.allow_new_users ? 'bg-indigo-600' : 'bg-gray-300'
+                  displaySettings?.allow_new_users ? 'bg-indigo-600' : 'bg-gray-300'
                 }`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    settings?.allow_new_users ? 'translate-x-6' : 'translate-x-1'
+                    displaySettings?.allow_new_users ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
               </button>

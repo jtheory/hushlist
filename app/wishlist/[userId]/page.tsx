@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { User, WishlistItem, ItemNote } from '@/lib/supabase';
-import { navigate } from '@/lib/view-transitions';
+import { Link } from 'next-view-transitions';
 
 export default function WishlistPage() {
   const { user: currentUser, loading: authLoading, updateUser } = useAuth();
@@ -223,7 +223,7 @@ export default function WishlistPage() {
 
   const startEditName = () => {
     setEditingName(true);
-    setEditNameText(wishlistOwner?.name || '');
+    setEditNameText(displayOwner?.name || '');
   };
 
   const cancelEditName = () => {
@@ -322,36 +322,36 @@ export default function WishlistPage() {
     }
   };
 
-  if (authLoading || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
-      </div>
-    );
-  }
-
-  if (!currentUser || !wishlistOwner) {
+  if (authLoading) {
     return null;
   }
+
+  if (!currentUser) {
+    return null;
+  }
+
+  // Show content even while loading - better for view transitions
+  const displayOwner = loading ? null : wishlistOwner;
+  const displayItems = loading ? [] : items;
 
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-3xl mx-auto px-4">
         <div className="mb-6">
-          <button
-            onClick={() => navigate(router, '/dashboard')}
+          <Link
+            href="/dashboard"
             className="text-indigo-600 hover:text-indigo-800 flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Back to dashboard
-          </button>
+          </Link>
         </div>
 
         <div
-          className="bg-white rounded-lg shadow-md overflow-hidden"
-          style={{ viewTransitionName: 'content-box' } as React.CSSProperties}
+          className="bg-white rounded-lg shadow-md overflow-hidden content-box-transition"
+          style={{ viewTransitionName: 'content-box', minHeight: '300px' } as React.CSSProperties}
         >
           <div className="p-6 border-b border-gray-200">
             {editingName ? (
@@ -379,7 +379,7 @@ export default function WishlistPage() {
             ) : (
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {wishlistOwner.name}&apos;s wishlist
+                  {displayOwner?.name}&apos;s wishlist
                   {isOwnList && <span className="text-lg font-normal text-gray-600 ml-2">(your list)</span>}
                 </h1>
                 <button
@@ -457,13 +457,13 @@ export default function WishlistPage() {
               </form>
             )}
 
-            {items.length === 0 ? (
+            {displayItems.length === 0 ? (
               <p className="text-center text-gray-500 py-8">
                 No items yet. {isOwnList ? 'Add your first wish!' : 'Be the first to add something!'}
               </p>
             ) : (
               <div className="space-y-3">
-                {items.map((item) => (
+                {displayItems.map((item) => (
                   <div
                     key={item.id}
                     className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg"
