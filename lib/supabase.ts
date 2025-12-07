@@ -36,3 +36,12 @@ export type Settings = {
   allow_new_users: boolean;
   updated_at: string;
 };
+
+export type ItemNote = {
+  id: string;
+  item_id: string;
+  author_id: string;
+  note_text: string;
+  created_at: string;
+  author?: User; // Optional, populated by join
+};

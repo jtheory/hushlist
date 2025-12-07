@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { User, WishlistItem } from '@/lib/supabase';
+import { User, WishlistItem, ItemNote } from '@/lib/supabase';
 
 export default function WishlistPage() {
   const { user: currentUser, loading: authLoading, updateUser } = useAuth();
@@ -21,6 +21,9 @@ export default function WishlistPage() {
   const [editNameText, setEditNameText] = useState('');
   const [bulkAddMode, setBulkAddMode] = useState(false);
   const [bulkText, setBulkText] = useState('');
+  const [itemNotes, setItemNotes] = useState<Record<string, ItemNote[]>>({});
+  const [addingNoteToItem, setAddingNoteToItem] = useState<string | null>(null);
+  const [newNoteText, setNewNoteText] = useState('');
 
   const isOwnList = currentUser?.id === userId;
 
@@ -40,6 +43,22 @@ export default function WishlistPage() {
         const { owner, items } = await response.json();
         setWishlistOwner(owner);
         setItems(items);
+
+        // Fetch notes for each item (only if not the list owner)
+        if (currentUser && currentUser.id !== userId) {
+          const notesPromises = items.map((item: WishlistItem) =>
+            fetch(`/api/wishlist/${userId}/items/${item.id}/notes?currentUserId=${currentUser.id}`)
+              .then(res => res.json())
+              .then(notes => ({ itemId: item.id, notes }))
+          );
+
+          const notesResults = await Promise.all(notesPromises);
+          const notesMap: Record<string, ItemNote[]> = {};
+          notesResults.forEach(({ itemId, notes }) => {
+            notesMap[itemId] = notes;
+          });
+          setItemNotes(notesMap);
+        }
       } catch (error) {
         console.error('Error fetching wishlist:', error);
       } finally {
@@ -225,6 +244,58 @@ export default function WishlistPage() {
     }
   };
 
+  const handleAddNote = async (itemId: string) => {
+    if (!newNoteText.trim() || !currentUser) return;
+
+    try {
+      const response = await fetch(`/api/wishlist/${userId}/items/${itemId}/notes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          note_text: newNoteText.trim(),
+          currentUserId: currentUser.id
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add note');
+      }
+
+      const newNote = await response.json();
+      setItemNotes(prev => ({
+        ...prev,
+        [itemId]: [...(prev[itemId] || []), newNote]
+      }));
+      setNewNoteText('');
+      setAddingNoteToItem(null);
+    } catch (error) {
+      console.error('Error adding note:', error);
+    }
+  };
+
+  const handleDeleteNotes = async (itemId: string) => {
+    if (!currentUser) return;
+
+    try {
+      const response = await fetch(
+        `/api/wishlist/${userId}/items/${itemId}/notes?currentUserId=${currentUser.id}`,
+        { method: 'DELETE' }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to delete notes');
+      }
+
+      // Remove only the current user's notes from the item
+      setItemNotes(prev => ({
+        ...prev,
+        [itemId]: (prev[itemId] || []).filter(note => note.author_id !== currentUser.id)
+      }));
+    } catch (error) {
+      console.error('Error deleting notes:', error);
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -402,7 +473,69 @@ export default function WishlistPage() {
                           </button>
                         </div>
                       ) : (
-                        <p className="text-gray-900">{item.item_text}</p>
+                        <>
+                          <p className="text-gray-900">{item.item_text}</p>
+
+                          {!isOwnList && itemNotes[item.id] && itemNotes[item.id].length > 0 && (
+                            <div className="mt-2 space-y-1">
+                              {itemNotes[item.id].map((note) => (
+                                <div key={note.id} className="text-xs text-gray-600">
+                                  <span className="font-semibold">{note.author?.name || 'Someone'}:</span>{' '}
+                                  {note.note_text}
+                                </div>
+                              ))}
+                              <button
+                                onClick={() => handleDeleteNotes(item.id)}
+                                className="text-xs text-red-600 hover:text-red-800 flex items-center gap-1 mt-1"
+                                title="Clear your notes"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Clear notes
+                              </button>
+                            </div>
+                          )}
+
+                          {!isOwnList && (
+                            <div className="mt-2">
+                              {addingNoteToItem === item.id ? (
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    value={newNoteText}
+                                    onChange={(e) => setNewNoteText(e.target.value)}
+                                    placeholder="Add a secret note..."
+                                    className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded-md text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    autoFocus
+                                  />
+                                  <button
+                                    onClick={() => handleAddNote(item.id)}
+                                    className="px-3 py-1 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700"
+                                  >
+                                    Add
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setAddingNoteToItem(null);
+                                      setNewNoteText('');
+                                    }}
+                                    className="px-3 py-1 bg-gray-300 text-gray-700 text-xs rounded-md hover:bg-gray-400"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setAddingNoteToItem(item.id)}
+                                  className="text-xs text-indigo-600 hover:text-indigo-800"
+                                >
+                                  Add a secret note
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
 
