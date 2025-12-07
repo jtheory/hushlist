@@ -403,7 +403,7 @@ export default function WishlistPage() {
                   setBulkText('');
                   setNewItemText('');
                 }}
-                className="text-sm text-indigo-600 hover:text-indigo-800"
+                className="text-sm text-indigo-600 hover:text-indigo-800 cursor-pointer"
               >
                 {bulkAddMode ? 'Switch to single item' : 'Add multiple items'}
               </button>
@@ -439,7 +439,7 @@ export default function WishlistPage() {
               </form>
             ) : (
               <form onSubmit={handleAddItem} className="mb-6">
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
                     value={newItemText}
@@ -449,7 +449,7 @@ export default function WishlistPage() {
                   />
                   <button
                     type="submit"
-                    className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 whitespace-nowrap"
                   >
                     Add
                   </button>
@@ -557,7 +557,7 @@ export default function WishlistPage() {
                               ) : (
                                 <button
                                   onClick={() => setAddingNoteToItem(item.id)}
-                                  className="text-xs text-indigo-600 hover:text-indigo-800"
+                                  className="text-xs text-indigo-600 hover:text-indigo-800 cursor-pointer"
                                 >
                                   Add a secret note
                                 </button>

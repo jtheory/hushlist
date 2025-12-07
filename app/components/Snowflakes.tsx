@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import type { JSX } from 'react';
 import './fun.css';
 
@@ -56,6 +57,8 @@ const Snowflakes = () => {
   const [snowflakes, setSnowflakes] = useState<JSX.Element[]>([]);
   const [offset, setOffset] = useState({ x: 0 });
   const [isMobile, setIsMobile] = useState(false);
+  const [windActive, setWindActive] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     // Detect if mobile/touch device
@@ -63,6 +66,31 @@ const Snowflakes = () => {
       setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0);
     };
     checkMobile();
+  }, []);
+
+  // Trigger wind gust effect on route changes
+  useEffect(() => {
+    setWindActive(true);
+    const timer = setTimeout(() => {
+      setWindActive(false);
+    }, 1600); // Full rotation duration
+    return () => clearTimeout(timer);
+  }, [pathname]);
+
+  // Pre-trigger wind effect on link clicks (before navigation)
+  useEffect(() => {
+    const handleLinkClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a');
+
+      if (link && link.href && !link.href.startsWith('http') && !link.target) {
+        // Internal navigation link - trigger wind effect early
+        setWindActive(true);
+      }
+    };
+
+    document.addEventListener('click', handleLinkClick, true);
+    return () => document.removeEventListener('click', handleLinkClick, true);
   }, []);
 
   useEffect(() => {
@@ -100,8 +128,8 @@ const Snowflakes = () => {
   useEffect(() => {
     const createSnowflake = () => {
       const size = Math.random() * 15 + 8;
-      // Spawn from -10vw to 110vw to account for parallax shift (±70px)
-      const left = Math.random() * 120 - 10;
+      // Spawn from 15vw to 135vw (relative to centered 150vw container) to cover viewport -10vw to 110vw
+      const left = Math.random() * 120 + 15;
       const animationDuration = Math.random() * 5 + 5;
       const shapeIndex = Math.floor(Math.random() * snowflakeShapes.length);
       const rotationDuration = Math.random() * 6 + 4; // 4-10 seconds for rotation
@@ -138,10 +166,10 @@ const Snowflakes = () => {
 
   return (
     <div
-      className="snowflakes"
+      className={`snowflakes ${windActive ? 'wind-active' : ''}`}
       style={{
-        transform: `translateX(${translateX}px)`,
-        transition: 'transform 0.3s ease-out',
+        // @ts-expect-error CSS custom property
+        '--translate-x': `${translateX}px`,
       }}
     >
       {snowflakes}

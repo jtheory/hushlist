@@ -3,11 +3,10 @@ body {
     background-color: #f8fafc;
 }
 
-/* View Transition animations */
+/* View Transition animations - remove default opacity fade */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-    animation-duration: 0.4s;
-    animation-timing-function: ease-in-out;
+    animation: none;
 }
 
 /* Content box morphing animation */
@@ -37,12 +36,30 @@ body {
 
 .snowflakes {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 50%;
+    left: 50%;
+    width: 150vw;
+    height: 150vh;
+    margin-left: -75vw;
+    margin-top: -75vh;
     pointer-events: none;
     z-index: 9999;
+    transform: translateX(var(--translate-x, 0px));
+    transition: transform 0.3s ease-out;
+    view-transition-name: none;
+}
+
+.snowflakes.wind-active {
+    animation: wind-spin 1.6s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+}
+
+@keyframes wind-spin {
+    0% {
+        transform: translateX(var(--translate-x, 0px)) rotate(0deg);
+    }
+    100% {
+        transform: translateX(var(--translate-x, 0px)) rotate(360deg);
+    }
 }
 
 .snowflake {
@@ -52,6 +69,13 @@ body {
     animation: fall linear infinite, rotate linear infinite;
     animation-duration: inherit, var(--rotation-duration);
     filter: blur(1px);
+}
+
+/* Speed up and scale snowflakes during wind gust */
+.wind-active .snowflake {
+    animation-duration: 0.8s, var(--rotation-duration);
+    transform: scale(3.0);
+    transition: transform 1.6s cubic-bezier(0.5, 0, 0.2, 1);
 }
 
 .snowflake svg {
@@ -64,6 +88,6 @@ body {
         transform: translateY(0) rotate(0deg);
     }
     to {
-        transform: translateY(100vh) rotate(calc(360deg * var(--rotation-direction)));
+        transform: translateY(150vh) rotate(calc(360deg * var(--rotation-direction)));
     }
 }

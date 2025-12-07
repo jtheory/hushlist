@@ -27,6 +27,9 @@ const BackgroundParallax = () => {
         setOffset({ x: scrollPercent * 0.3, y: 0 }); // Subtle horizontal shift based on scroll
       };
 
+      // Initialize with current scroll position to prevent hop
+      handleScroll();
+
       window.addEventListener('scroll', handleScroll, { passive: true });
       return () => window.removeEventListener('scroll', handleScroll);
     } else {
