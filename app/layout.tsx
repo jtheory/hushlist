@@ -30,7 +30,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="snowman-bg"></div>
+        <div className="background-bg"></div>
         <Snowflakes />
         <AuthProvider>{children}</AuthProvider>
       </body>

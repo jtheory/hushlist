@@ -3,8 +3,8 @@ body {
     background-color: #f8fafc;
 }
 
-.snowman-bg {
-    background-image: url('/snowman1.png');
+.background-bg {
+    background-image: url('/mountain.jpg');
     background-size: cover;
     background-position: center;
     opacity: 0.2;
