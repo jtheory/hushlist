@@ -44,21 +44,25 @@ body {
     margin-top: -75vh;
     pointer-events: none;
     z-index: 9999;
-    transform: translateX(var(--translate-x, 0px));
+    transform: translate3d(var(--translate-x, 0px), 0, 0);
     transition: transform 0.3s ease-out;
+    will-change: transform;
     view-transition-name: none;
 }
 
 .snowflakes.wind-active {
-    animation: wind-spin 1.6s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+    animation: wind-tilt 4s cubic-bezier(0.5, 0, 0.2, 1) forwards;
 }
 
-@keyframes wind-spin {
-    0% {
-        transform: translateX(var(--translate-x, 0px)) rotate(0deg);
+@keyframes wind-tilt {
+    0%, 25% {
+        transform: translate3d(var(--translate-x, 0px), 0, 0) rotate(0deg);
     }
-    100% {
-        transform: translateX(var(--translate-x, 0px)) rotate(360deg);
+    50% {
+        transform: translate3d(var(--translate-x, 0px), 0, 0) rotate(30deg);
+    }
+    75%, 100% {
+        transform: translate3d(var(--translate-x, 0px), 0, 0) rotate(0deg);
     }
 }
 
@@ -68,14 +72,21 @@ body {
     opacity: 0.8;
     animation: fall linear infinite, rotate linear infinite;
     animation-duration: inherit, var(--rotation-duration);
-    filter: blur(1px);
+    will-change: transform;
 }
 
-/* Speed up and scale snowflakes during wind gust */
+/* Speed up snowflakes during wind gust - override normal fall */
 .wind-active .snowflake {
-    animation-duration: 0.8s, var(--rotation-duration);
-    transform: scale(3.0);
-    transition: transform 1.6s cubic-bezier(0.5, 0, 0.2, 1);
+    animation: wind-fall 4s cubic-bezier(0.33, 0, 0.1, 1) forwards;
+}
+
+@keyframes wind-fall {
+    0% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+    100% {
+        transform: translate3d(0, 200vh, 0) rotate(calc(1080deg * var(--rotation-direction)));
+    }
 }
 
 .snowflake svg {
@@ -85,9 +96,9 @@ body {
 
 @keyframes fall {
     from {
-        transform: translateY(0) rotate(0deg);
+        transform: translate3d(0, 0, 0) rotate(0deg);
     }
     to {
-        transform: translateY(150vh) rotate(calc(360deg * var(--rotation-direction)));
+        transform: translate3d(0, 150vh, 0) rotate(calc(360deg * var(--rotation-direction)));
     }
 }

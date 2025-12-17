@@ -34,7 +34,10 @@ export default function LoginPage() {
         style={{ viewTransitionName: 'content-box' } as React.CSSProperties}
       >
         <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900">
+          <h2
+            className="text-center text-3xl font-bold text-gray-900 cursor-pointer select-none"
+            onClick={() => window.dispatchEvent(new Event('triggerWind'))}
+          >
             hushlist
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
