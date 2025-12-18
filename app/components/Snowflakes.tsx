@@ -76,6 +76,56 @@ const Snowflakes = () => {
     return () => window.removeEventListener('triggerWind', handleWindTrigger);
   }, []);
 
+  // Manipulate animation playback rates during wind with easing
+  useEffect(() => {
+    const snowflakeElements = document.querySelectorAll('.snowflake');
+    const targetRate = windActive ? 6 : 1;
+    const duration = 1000; // 1 second to ramp up/down
+    const startTime = Date.now();
+    let rafId: number;
+
+    // Capture starting rates from actual animations
+    const startRates = new Map<Element, number>();
+    snowflakeElements.forEach((element) => {
+      const animations = element.getAnimations();
+      const fallAnimation = animations.find(
+        (anim) => anim.animationName === 'fall' || anim.animationName === 'fall-fast'
+      );
+      if (fallAnimation) {
+        startRates.set(element, fallAnimation.playbackRate);
+      }
+    });
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Ease in-out cubic
+      const eased = progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+      snowflakeElements.forEach((element) => {
+        const animations = element.getAnimations();
+        const startRate = startRates.get(element) || (windActive ? 1 : 6);
+
+        animations.forEach((animation) => {
+          // Only speed up the "fall" animation, not rotation
+          if (animation.animationName === 'fall' || animation.animationName === 'fall-fast') {
+            animation.playbackRate = startRate + (targetRate - startRate) * eased;
+          }
+        });
+      });
+
+      if (progress < 1) {
+        rafId = requestAnimationFrame(animate);
+      }
+    };
+
+    rafId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafId);
+  }, [windActive]);
+
   useEffect(() => {
     let rafId: number | null = null;
     let latestValue = 0;
@@ -124,69 +174,49 @@ const Snowflakes = () => {
     }
   }, [isMobile]);
 
-  const createSnowflake = () => {
-    const size = Math.random() * 15 + 8;
-    // Spawn from 15vw to 135vw (relative to centered 150vw container) to cover viewport -10vw to 110vw
-    const left = Math.random() * 120 + 15;
-    const animationDuration = Math.random() * 5 + 8; // 8-13 seconds to fall
-    const shapeIndex = Math.floor(Math.random() * snowflakeShapes.length);
-    const rotationDuration = Math.random() * 6 + 4; // 4-10 seconds for rotation
-    const rotationDirection = Math.random() > 0.5 ? 1 : -1; // Random direction
-    const id = `snow-${Date.now()}-${Math.random()}`;
-
-    return (
-      <div
-        key={id}
-        className="snowflake"
-        style={{
-          width: `${size}px`,
-          height: `${size}px`,
-          left: `${left}vw`,
-          animationDuration: `${animationDuration}s`,
-          // @ts-expect-error CSS custom properties
-          '--rotation-duration': `${rotationDuration}s`,
-          '--rotation-direction': rotationDirection,
-        }}
-        onAnimationIteration={(e) => {
-          // Remove snowflake after it completes one fall cycle
-          if (e.animationName === 'fall') {
-            setSnowflakes((prev) => prev.filter((sf) => sf.key !== id));
-          }
-        }}
-      >
-        {snowflakeShapes[shapeIndex]}
-      </div>
-    );
-  };
-
   useEffect(() => {
     const MAX_SNOWFLAKES = 300;
     const CREATION_INTERVAL = 100; // Create new snowflake every 100ms (~30s to reach max)
+    let count = 0;
 
     const interval = setInterval(() => {
-      setSnowflakes((prev) => {
-        // Keep creating new snowflakes to maintain count
-        if (prev.length < MAX_SNOWFLAKES) {
-          return [...prev, createSnowflake()];
-        }
-        return prev;
-      });
+      if (count >= MAX_SNOWFLAKES) {
+        clearInterval(interval);
+        return;
+      }
+
+      const size = Math.random() * 15 + 8;
+      const left = Math.random() * 120 + 15;
+      const animationDuration = Math.random() * 5 + 8; // 8-13 seconds to fall
+      const shapeIndex = Math.floor(Math.random() * snowflakeShapes.length);
+      const rotationDuration = Math.random() * 6 + 4; // 4-10 seconds for rotation
+      const rotationDirection = Math.random() > 0.5 ? 1 : -1;
+      const id = `snow-${count}`;
+
+      const snowflake = (
+        <div
+          key={id}
+          className="snowflake"
+          style={{
+            width: `${size}px`,
+            height: `${size}px`,
+            left: `${left}vw`,
+            // @ts-expect-error CSS custom properties
+            '--fall-duration': `${animationDuration}s`,
+            '--rotation-duration': `${rotationDuration}s`,
+            '--rotation-direction': rotationDirection,
+          }}
+        >
+          {snowflakeShapes[shapeIndex]}
+        </div>
+      );
+
+      setSnowflakes((prev) => [...prev, snowflake]);
+      count++;
     }, CREATION_INTERVAL);
 
     return () => clearInterval(interval);
   }, []);
-
-  // Create extra snowflakes rapidly during wind gusts
-  useEffect(() => {
-    if (!windActive) return;
-
-    const WIND_CREATION_INTERVAL = 30; // Much faster during wind
-    const interval = setInterval(() => {
-      setSnowflakes((prev) => [...prev, createSnowflake()]);
-    }, WIND_CREATION_INTERVAL);
-
-    return () => clearInterval(interval);
-  }, [windActive]);
 
   // Snowflakes move in same direction as mouse, more dramatically (70px horizontal movement)
   const translateX = offset.x * 70;

@@ -71,23 +71,11 @@ body {
     top: -10px;
     opacity: 0.8;
     animation: fall linear infinite, rotate linear infinite;
-    animation-duration: inherit, var(--rotation-duration);
+    animation-duration: var(--fall-duration), var(--rotation-duration);
     will-change: transform;
 }
 
-/* Speed up snowflakes during wind gust - override normal fall */
-.wind-active .snowflake {
-    animation: wind-fall 4s cubic-bezier(0.33, 0, 0.1, 1) forwards;
-}
-
-@keyframes wind-fall {
-    0% {
-        transform: translate3d(0, 0, 0) rotate(0deg);
-    }
-    100% {
-        transform: translate3d(0, 200vh, 0) rotate(calc(1080deg * var(--rotation-direction)));
-    }
-}
+/* Wind gust doesn't change animation - JS will manipulate playbackRate */
 
 .snowflake svg {
     width: 100%;
