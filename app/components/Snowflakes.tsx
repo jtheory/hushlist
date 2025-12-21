@@ -42,7 +42,7 @@ const Snowflakes = () => {
     setWindActive(true);
     const timer = setTimeout(() => {
       setWindActive(false);
-    }, 4000); // Match wind animation duration
+    }, 2200); // Start ramp down
     return () => clearTimeout(timer);
   }, [pathname]);
 
@@ -68,7 +68,7 @@ const Snowflakes = () => {
       setWindActive(true);
       const timer = setTimeout(() => {
         setWindActive(false);
-      }, 4000); // Match wind animation duration
+      }, 2200); // Start ramp down
       return () => clearTimeout(timer);
     };
 
@@ -80,7 +80,7 @@ const Snowflakes = () => {
   useEffect(() => {
     const snowflakeElements = document.querySelectorAll('.snowflake');
     const targetRate = windActive ? 6 : 1;
-    const duration = 1000; // 1 second to ramp up/down
+    const duration = 2000; // 2 seconds to ramp up/down
     const startTime = Date.now();
     let rafId: number;
 
