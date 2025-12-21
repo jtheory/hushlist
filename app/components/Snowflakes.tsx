@@ -89,7 +89,7 @@ const Snowflakes = () => {
     snowflakeElements.forEach((element) => {
       const animations = element.getAnimations();
       const fallAnimation = animations.find(
-        (anim) => anim.animationName === 'fall' || anim.animationName === 'fall-fast'
+        (anim) => (anim as CSSAnimation).animationName === 'fall' || (anim as CSSAnimation).animationName === 'fall-fast'
       );
       if (fallAnimation) {
         startRates.set(element, fallAnimation.playbackRate);
@@ -111,7 +111,7 @@ const Snowflakes = () => {
 
         animations.forEach((animation) => {
           // Only speed up the "fall" animation, not rotation
-          if (animation.animationName === 'fall' || animation.animationName === 'fall-fast') {
+          if ((animation as CSSAnimation).animationName === 'fall' || (animation as CSSAnimation).animationName === 'fall-fast') {
             animation.playbackRate = startRate + (targetRate - startRate) * eased;
           }
         });
